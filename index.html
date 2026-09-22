@@ -31,6 +31,13 @@
   --amber-dark:#9C3E6C;
   --sky:#3F8F86;
 }
+.lesson-content.theme-terracotta{
+  --forest:#8C4A34;
+  --forest-dark:#6B3626;
+  --amber:#3F7D6B;
+  --amber-dark:#2E5D4F;
+  --sky:#C9922A;
+}
 *{box-sizing:border-box;}
 html,body{margin:0;padding:0;}
 body{
@@ -503,6 +510,16 @@ const SEED2_META = {
   createdAt: Date.now() - 1000
 };
 
+const SEED3_ID = "skladne-rechennya-pryama-mova-6";
+const SEED3_META = {
+  id: SEED3_ID,
+  title: "Складне речення. Пряма мова. Діалог",
+  topic: "Синтаксис · §7",
+  duration: "45 хв",
+  status: "ready",
+  createdAt: Date.now() - 2000
+};
+
 async function loadMeta(){
   try{
     const res = await window.storage.get('lessons-meta', false);
@@ -520,12 +537,13 @@ let lessonsMeta = [];
 async function initStorage(){
   let meta = await loadMeta();
   if(!meta || !Array.isArray(meta) || meta.length === 0){
-    meta = [SEED2_META, SEED_META];
+    meta = [SEED3_META, SEED2_META, SEED_META];
     await saveMeta(meta);
   } else {
     let changed = false;
     if(!meta.find(m => m.id === SEED_ID)){ meta.push(SEED_META); changed = true; }
     if(!meta.find(m => m.id === SEED2_ID)){ meta.push(SEED2_META); changed = true; }
+    if(!meta.find(m => m.id === SEED3_ID)){ meta.push(SEED3_META); changed = true; }
     if(changed) await saveMeta(meta);
   }
   lessonsMeta = meta;
@@ -590,7 +608,7 @@ function renderGrid(){
 }
 
 async function deleteLesson(id){
-  if(id === SEED_ID || id === SEED2_ID){
+  if(id === SEED_ID || id === SEED2_ID || id === SEED3_ID){
     if(!confirm('Це готовий приклад уроку. Точно видалити?')) return;
   }
   lessonsMeta = lessonsMeta.filter(m => m.id !== id);
@@ -2077,6 +2095,357 @@ function attachL2ReflectHandlers(){
   genQuickfire('l2-recap-list', L2_RECAP_ITEMS, 'l2-recap-score');
 }
 
+/* ============================================================
+   LESSON 3: СКЛАДНЕ РЕЧЕННЯ. ПРЯМА МОВА. ДІАЛОГ
+============================================================ */
+function l3WarmupHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${iconSvg('clock')}<h3 style="margin-bottom:0;">Пригадаймо перед стартом</h3></div>
+      <div class="task-block" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="task-label">ПРИГАДАЙМО</div>
+        <div class="task-q">Обміркуйте усно в парі:</div>
+        <div class="callout">
+          <p style="margin-bottom:8px;"><strong>1.</strong> Чим складне речення відрізняється від простого з однорідними присудками?</p>
+          <p style="margin-bottom:0;"><strong>2.</strong> Як на письмі оформлюють репліки діалогу?</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${iconSvg('bulb')}<h3 style="margin-bottom:0;">Гра «Так чи ні»</h3></div>
+      <p class="subtle">Увага: тут є питання-пастки, читайте уважно.</p>
+      <div class="quickfire-list" id="l3-qf-list"></div>
+      <div class="game-score" id="l3-qf-score">Рахунок: 0/${L3_QF_ITEMS.length}</div>
+    </div>
+  `;
+}
+const L3_QF_ITEMS = [
+  {t:'У складному реченні щонайменше дві граматичні основи.', answer:true},
+  {t:'У реченні «Хлопець узяв рюкзак і вирушив у дорогу» дві граматичні основи.', answer:false},
+  {t:'Репліки діалогу завжди починаються з тире.', answer:true},
+  {t:'У прямій мові лапки використовують і в діалозі, і в суцільному тексті.', answer:false},
+  {t:'Схема «П», — а. означає, що пряма мова стоїть перед словами автора.', answer:true},
+];
+function attachL3WarmupHandlers(){
+  genQuickfire('l3-qf-list', L3_QF_ITEMS, 'l3-qf-score');
+}
+
+function l3TheoryHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${iconSvg('book')}<h3 style="margin-bottom:0;">Складне речення</h3></div>
+      <div class="def-box">
+        <span class="term">Складне речення</span> має дві або більше граматичні основи. Між простими реченнями в його складі здебільшого ставимо кому.
+      </div>
+      <p class="example">Сонце сідало, і небо стало багряним. <span class="subtle">(2 основи: сонце сідало; небо стало)</span></p>
+      <div class="callout amber">
+        <strong>Не плутайте!</strong> Якщо в реченні один підмет і кілька присудків, з'єднаних одиничним «і», — це просте речення з однорідними присудками, кома перед «і» НЕ ставиться.
+      </div>
+      <p class="example">Хлопець узяв рюкзак і вирушив у дорогу. <span class="subtle">(1 основа: хлопець узяв, вирушив)</span></p>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('bubble')}<h3 style="margin-bottom:0;">Пряма мова</h3></div>
+      <div class="def-box">
+        <span class="term">Пряма мова</span> — дослівно передані чиїсь слова. Береться в лапки. Основні схеми:
+      </div>
+      <div class="match-grid" style="grid-template-columns:1fr 1fr;">
+        <div class="match-item"><strong>А: «П».</strong><br>Тренер сказав: «Тренування почнеться о восьмій».</div>
+        <div class="match-item"><strong>«П», — а.</strong><br>«Тренування почнеться о восьмій», — сказав тренер.</div>
+        <div class="match-item"><strong>А: «П!»</strong><br>Мама вигукнула: «Обережно, там драбина!»</div>
+        <div class="match-item"><strong>«П?» — а.</strong><br>«Коли ми вже прийдемо?» — запитав друг.</div>
+      </div>
+      <h4>Гра «Перевір себе»</h4>
+      <p class="subtle">Клацніть картку, щоб перевернути й побачити приклад.</p>
+      <div class="flip-grid" id="l3-flip-grid"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('pencil')}<h3 style="margin-bottom:0;">Діалог</h3></div>
+      <div class="def-box">
+        <span class="term">Діалог</span> — розмова двох чи більше осіб. Кожна репліка починається з нового рядка й тире. Лапки в діалозі НЕ вживаємо.
+      </div>
+      <p class="example">— Ти вже готовий?<br>— Майже, ще п'ять хвилин.<br>— Гаразд, чекаю на подвір'ї.</p>
+      <h4>Гра «Просте чи складне?»</h4>
+      <p class="subtle">Складніший рівень: зверніть увагу на кількість граматичних основ.</p>
+      <div id="l3-simple-complex-list"></div>
+    </div>
+  `;
+}
+const L3_FLIP_ITEMS = [
+  {front:'А: «П».', back:'Учителька пояснила: «Завтра контрольна робота».'},
+  {front:'«П», — а.', back:'«Завтра контрольна робота», — пояснила учителька.'},
+  {front:'А: «П!»', back:'Тато крикнув: «Обережно на дорозі!»'},
+  {front:'«П?» — а.', back:'«Де мій зошит?» — запитав Максим.'},
+];
+const L3_SIMPLE_COMPLEX_ITEMS = [
+  {s:'Вітер стих, і море заспокоїлося.', opts:['Просте','Складне'], correct:1},
+  {s:'Вітер стих і більше не турбував рибалок.', opts:['Просте','Складне'], correct:0},
+  {s:'Дівчинка прочитала книжку і поставила її на полицю.', opts:['Просте','Складне'], correct:0},
+  {s:'Дівчинка прочитала книжку, а її брат ще й не починав.', opts:['Просте','Складне'], correct:1},
+  {s:'Сонце зайшло за хмару, і в кімнаті стало темніше.', opts:['Просте','Складне'], correct:1},
+  {s:'Кіт потягнувся, позіхнув і знову заснув.', opts:['Просте','Складне'], correct:0},
+];
+function attachL3TheoryHandlers(){
+  genFlipGrid('l3-flip-grid', L3_FLIP_ITEMS);
+  genChoiceRows('l3-simple-complex-list', L3_SIMPLE_COMPLEX_ITEMS);
+}
+
+function l3ReadingHTML(){
+  return `
+    <div class="panel">
+      <h3>Читання й аналіз тексту</h3>
+      <p class="subtle" style="margin-bottom:16px;">Прочитайте легенду. Знайдіть у ній складні речення, пряму мову та діалог.</p>
+      <div class="reading-text">
+        <p><strong>ЛЕГЕНДА ПРО ДЗВІНКЕ ДЖЕРЕЛО</strong></p>
+        <p>Колись у нашому селі жила бабуся Ганна, яка знала безліч старих переказів. Одного разу вона привела онука Тараса до лісового джерела, і вода в ньому дзвеніла, наче срібний дзвіночок.</p>
+        <p>— Чому воно так дзвенить? — запитав Тарас.<br>
+        — Кажуть, тут колись заховала свій голос лісова русалка, — відповіла бабуся.</p>
+        <p>Тарас нахилився над водою і побачив своє відображення. Раптом вітер сколихнув листя, і джерело задзвеніло ще гучніше.</p>
+        <p>«Це джерело береже таємниці лісу», — прошепотіла бабуся.</p>
+        <p>Тарас зачерпнув води долонями і напився. Відтоді, коли йому було сумно, він приходив до джерела, і дзвін води завжди заспокоював його серце.</p>
+      </div>
+
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 1 · Скільки граматичних основ у реченні «Вона привела онука Тараса до лісового джерела, і вода в ньому дзвеніла, наче срібний дзвіночок»?</div>
+        <div class="opt-list" id="l3-reading-q1"></div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 2 · За якою схемою побудоване речення «Це джерело береже таємниці лісу», — прошепотіла бабуся»?</div>
+        <div id="l3-reading-scheme-list"></div>
+      </div>
+
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 3 · Просте чи складне речення?</div>
+        <div id="l3-reading-simple-list"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('bulb')}<h3 style="margin-bottom:0;">Гра «Правда чи вигадка»</h3></div>
+      <p class="subtle">Перевірте, чи уважно ви прочитали легенду.</p>
+      <div class="quickfire-list" id="l3-truth-list"></div>
+      <div class="game-score" id="l3-truth-score">Рахунок: 0/${L3_TRUTH_ITEMS.length}</div>
+    </div>
+  `;
+}
+const L3_READING_SCHEME_ITEMS = [
+  {s:'«Це джерело береже таємниці лісу», — прошепотіла бабуся.', opts:['А: «П».','«П», — а.','А: «П!»','«П?» — а.'], correct:1},
+];
+const L3_READING_SIMPLE_ITEMS = [
+  {s:'Тарас нахилився над водою і побачив своє відображення.', opts:['Просте','Складне'], correct:0},
+  {s:'Раптом вітер сколихнув листя, і джерело задзвеніло ще гучніше.', opts:['Просте','Складне'], correct:1},
+  {s:'Тарас зачерпнув води долонями і напився.', opts:['Просте','Складне'], correct:0},
+];
+const L3_TRUTH_ITEMS = [
+  {t:'Бабусю з легенди звали Ганна.', answer:true},
+  {t:'Джерело дзвеніло, бо там жила русалка з піснею.', answer:false},
+  {t:'Тарас одразу побіг геть, не наблизившись до джерела.', answer:false},
+  {t:'Бабуся сказала, що джерело береже таємниці лісу.', answer:true},
+];
+function attachL3ReadingHandlers(){
+  const wrap = document.getElementById('l3-reading-q1');
+  if(wrap){
+    const opts = [
+      {t:'1 основа', correct:false},
+      {t:'2 основи', correct:true},
+      {t:'3 основи', correct:false},
+    ];
+    wrap.innerHTML = opts.map((o,i)=>`
+      <label class="opt" data-i="${i}">
+        <input type="radio" name="l3-read-q1" value="${i}">
+        <span>${o.t}</span>
+      </label>`).join('');
+    wrap.querySelectorAll('.opt').forEach((el,i) => {
+      el.addEventListener('click', () => {
+        wrap.querySelectorAll('.opt').forEach(o => o.classList.remove('correct','incorrect'));
+        el.classList.add(opts[i].correct ? 'correct' : 'incorrect');
+      });
+    });
+  }
+  genChoiceRows('l3-reading-scheme-list', L3_READING_SCHEME_ITEMS);
+  genChoiceRows('l3-reading-simple-list', L3_READING_SIMPLE_ITEMS);
+  genQuickfire('l3-truth-list', L3_TRUTH_ITEMS, 'l3-truth-score');
+}
+
+function l3PracticeHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 1. Гра «Кошики»</h3></div>
+      <p class="subtle">Розподіліть речення за трьома кошиками. Уважно рахуйте основи!</p>
+      <div class="pool-row" id="l3-p1-pool"></div>
+      <div class="basket-row">
+        <div class="basket" data-basket-for="l3-p1-pool" data-type="simple"><h5>1️⃣ Просте</h5><div id="l3-basket-simple"></div></div>
+        <div class="basket" data-basket-for="l3-p1-pool" data-type="complex-conj"><h5>🔗 Складне (зі сполучником)</h5><div id="l3-basket-complex-conj"></div></div>
+        <div class="basket" data-basket-for="l3-p1-pool" data-type="complex-noconj"><h5>➗ Складне (без сполучника)</h5><div id="l3-basket-complex-noconj"></div></div>
+      </div>
+      <div class="game-score" id="l3-p1-score">Рахунок: 0/${L3_P1_ITEMS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('check')}<h3 style="margin-bottom:0;">Вправа 2. Гра «Кома потрібна?»</h3></div>
+      <p class="subtle">Пастки на кожному кроці — читайте уважно кількість основ.</p>
+      <div class="quickfire-list" id="l3-p2-list"></div>
+      <div class="game-score" id="l3-p2-score">Рахунок: 0/${L3_P2_ITEMS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('bubble')}<h3 style="margin-bottom:0;">Вправа 3. Гра «Яка схема?»</h3></div>
+      <p class="subtle">Визначте схему прямої мови для кожного речення.</p>
+      <div id="l3-p3-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('check')}<h3 style="margin-bottom:0;">Вправа 4. Гра «Знайди пару»</h3></div>
+      <p class="subtle">З'єднайте схему з відповідним прикладом.</p>
+      <div class="match-game-grid">
+        <div class="match-pile" id="l3-match-left"></div>
+        <div class="match-pile" id="l3-match-right"></div>
+      </div>
+      <div class="game-score" id="l3-match-score">Знайдено пар: 0/${L3_MATCH_PAIRS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 5. Гра «Склади речення»</h3></div>
+      <p class="subtle">Зберіть складне речення з комою в потрібному місці.</p>
+      <div class="callout" id="l3-builder-target" style="min-height:52px;font-family:'Lora',serif;font-size:16.5px;"></div>
+      <div class="pool-row" id="l3-builder-pool" style="margin-top:12px;"></div>
+      <button class="check-btn" onclick="l3CheckBuilder()">Перевірити</button>
+      <button class="nav-btn secondary" style="padding:9px 16px;font-size:13px;margin-top:14px;margin-left:8px;" onclick="l3ShuffleBuilder()">Перемішати ще раз</button>
+      <div id="l3-builder-feedback" class="feedback"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('bulb')}<h3 style="margin-bottom:0;">Вправа 6. Гра «Репліку оформлено правильно?»</h3></div>
+      <p class="subtle">Оцініть, чи правильно оформлено репліку діалогу або пряму мову.</p>
+      <div class="quickfire-list" id="l3-p6-list"></div>
+      <div class="game-score" id="l3-p6-score">Рахунок: 0/${L3_P6_ITEMS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 7. Гра «Просте чи складне?» (бліц)</h3></div>
+      <p class="subtle">Останній раунд — найважчі приклади.</p>
+      <div id="l3-p7-list"></div>
+    </div>
+  `;
+}
+const L3_P1_ITEMS = [
+  {t:'Листя жовтіло і тихо падало на землю.', correctType:'simple'},
+  {t:'Листя жовтіло, і вітер зривав його з гілок.', correctType:'complex-conj'},
+  {t:'Стемніло, зірки засяяли на небі.', correctType:'complex-noconj'},
+  {t:'Хлопчик підняв руку і відповів на питання.', correctType:'simple'},
+  {t:'Хлопчик підняв руку, а вчителька усміхнулася.', correctType:'complex-conj'},
+  {t:'Дощ ущух, стежка підсохла.', correctType:'complex-noconj'},
+  {t:'Кіт вигнув спину і замуркотів.', correctType:'simple'},
+  {t:'Сонце зайшло, надворі стало прохолодно.', correctType:'complex-noconj'},
+];
+const L3_P2_ITEMS = [
+  {t:'«Дівчинка взяла олівець і намалювала будиночок» — кома перед «і» не потрібна.', answer:true},
+  {t:'«Дівчинка взяла олівець, і брат почав малювати поруч» — кома перед «і» потрібна.', answer:true},
+  {t:'«Вітер посилився і дерева зашуміли» — кома перед «і» не потрібна.', answer:false},
+  {t:'«Ми зачекали, поки закінчиться дощ, і пішли далі» — тут одна граматична основа.', answer:false},
+  {t:'«Хлопець свиснув і собака прибіг» — кома перед «і» потрібна.', answer:true},
+];
+const L3_P3_ITEMS = [
+  {s:'Директор оголосив: «Завтра екскурсія до музею».', opts:['А: «П».','«П», — а.','А: «П!»','«П?» — а.'], correct:0},
+  {s:'«Обережно, лід слизький!» — попередила вчителька.', opts:['А: «П».','«П», — а.','«П!» — а.','«П?» — а.'], correct:2},
+  {s:'«Де ти був увесь день?» — запитала мама.', opts:['А: «П».','«П», — а.','А: «П!»','«П?» — а.'], correct:3},
+  {s:'Сусідка сказала: «Ваш кіт знову сидить на даху».', opts:['А: «П».','«П», — а.','А: «П!»','«П?» — а.'], correct:0},
+  {s:'«Це найкращий день у моєму житті», — зізнався хлопчик.', opts:['А: «П».','«П», — а.','А: «П!»','«П?» — а.'], correct:1},
+];
+const L3_MATCH_PAIRS = [
+  {left:'А: «П».', right:'Тренер сказав: «Збір о восьмій».'},
+  {left:'«П», — а.', right:'«Збір о восьмій», — сказав тренер.'},
+  {left:'А: «П!»', right:'Мама крикнула: «Стій, не переходь!»'},
+  {left:'«П?» — а.', right:'«Коли обід?» — запитав хлопчик.'},
+];
+const L3_BUILDER_WORDS = ['Сонце','сідало,','і','небо','стало','багряним.'];
+const L3_P6_ITEMS = [
+  {t:'— Ти вже готовий?<br>— Майже, ще п\u2019ять хвилин. — Правильно оформлено: кожна репліка з нового рядка й тире.', answer:true},
+  {t:'«Ти вже готовий?» «Майже, ще п\u2019ять хвилин.» — репліки в одному рядку без тире, у лапках.', answer:false},
+  {t:'«Це джерело береже таємниці лісу», — прошепотіла бабуся. — пряма мова в лапках, кома і тире на місці.', answer:true},
+  {t:'«Це джерело береже таємниці лісу» прошепотіла бабуся. — без коми й тире перед словами автора.', answer:false},
+];
+const L3_P7_ITEMS = [
+  {s:'Він відкрив двері і завмер від подиву.', opts:['Просте','Складне'], correct:0},
+  {s:'Він відкрив двері, і в кімнаті нікого не було.', opts:['Просте','Складне'], correct:1},
+  {s:'Учні зібрали портфелі і вийшли з класу.', opts:['Просте','Складне'], correct:0},
+  {s:'Задзвенів дзвінок, і всі кинулися до виходу.', opts:['Просте','Складне'], correct:1},
+];
+let l3BuilderHandle = null;
+function attachL3PracticeHandlers(){
+  genBasketGame('l3-p1-pool',
+    [
+      {type:'simple', elId:'l3-basket-simple'},
+      {type:'complex-conj', elId:'l3-basket-complex-conj'},
+      {type:'complex-noconj', elId:'l3-basket-complex-noconj'},
+    ],
+    L3_P1_ITEMS, 'l3-p1-score');
+  genQuickfire('l3-p2-list', L3_P2_ITEMS, 'l3-p2-score');
+  genChoiceRows('l3-p3-list', L3_P3_ITEMS);
+  genMatchGame('l3-match-left', 'l3-match-right', 'l3-match-score', L3_MATCH_PAIRS);
+  l3BuilderHandle = genBuilder('l3-builder-target', 'l3-builder-pool', L3_BUILDER_WORDS);
+  genQuickfire('l3-p6-list', L3_P6_ITEMS, 'l3-p6-score', 'Правильно', 'Неправильно');
+  genChoiceRows('l3-p7-list', L3_P7_ITEMS);
+}
+function l3CheckBuilder(){
+  if(l3BuilderHandle) l3BuilderHandle.check('l3-builder-feedback', L3_BUILDER_WORDS.join(' '));
+}
+function l3ShuffleBuilder(){
+  if(l3BuilderHandle) l3BuilderHandle.shuffle();
+}
+
+const QUIZ3 = [
+  {q:'Скільки граматичних основ має складне речення?', opts:['Тільки одну','Щонайменше дві','Завжди три','Жодної'], correct:1},
+  {q:'У реченні «Вітер стих і море заспокоїлося» кома перед «і»:', opts:['не потрібна, бо одна основа','потрібна, бо дві основи','потрібна завжди перед «і»','залежить від інтонації'], correct:1},
+  {q:'У реченні «Кіт потягнувся, позіхнув і знову заснув» скільки граматичних основ?', opts:['1','2','3','4'], correct:0},
+  {q:'Схема А: «П».означає, що:', opts:['пряма мова стоїть перед словами автора','слова автора стоять перед прямою мовою','це репліка діалогу','кома не потрібна'], correct:1},
+  {q:'Яка схема відповідає реченню «Обережно!» — крикнув тато.?', opts:['А: «П».','«П», — а.','«П!» — а.','«П?» — а.'], correct:2},
+  {q:'Чим у діалозі позначають початок репліки нового співрозмовника?', opts:['Лапками','Тире з нового рядка','Двокрапкою','Дужками'], correct:1},
+  {q:'У діалозі лапки навколо реплік:', opts:['завжди ставлять','ніколи не ставлять','ставлять лише в питальних реченнях','ставлять тільки один раз'], correct:1},
+  {q:'У реченні «Дощ ущух, стежка підсохла» сполучник між частинами:', opts:['є, це «і»','є, це «а»','відсутній','є, це «але»'], correct:2},
+  {q:'Пряма мова на письмі оформлюється:', opts:['дужками','лапками','зірочками','підкресленням'], correct:1},
+  {q:'У реченні «Хлопчик підняв руку, а вчителька усміхнулася» скільки основ?', opts:['1','2','3','Неможливо визначити'], correct:1},
+  {q:'Яка схема відповідає реченню «Де мій зошит?» — запитав Максим.?', opts:['А: «П».','«П», — а.','«П!» — а.','«П?» — а.'], correct:3},
+  {q:'Просте речення з однорідними присудками має:', opts:['один підмет і кілька присудків','кілька підметів','дві граматичні основи','завжди кому перед «і»'], correct:0},
+];
+function l3QuizHTML(){ return quizHTML(QUIZ3); }
+
+const L3_RECAP_ITEMS = [
+  {t:'Складне речення має дві й більше граматичних основи.', answer:true},
+  {t:'У діалозі репліки виділяють лапками.', answer:false},
+  {t:'Схема «П», — а. означає, що пряма мова стоїть першою.', answer:true},
+];
+function l3ReflectHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${iconSvg('bulb')}<h3 style="margin-bottom:0;">Підсумок уроку</h3></div>
+      <p>Сьогодні ми навчилися відрізняти складне речення від простого з однорідними присудками, розібрали схеми прямої мови та правила оформлення діалогу.</p>
+      <div class="task-block" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="task-label">ЯК ПРОЙШОВ УРОК?</div>
+        <div class="mood-row" id="mood-row">
+          ${MOODS.map((m,i)=>`<button class="mood-btn" data-i="${i}" title="${m.label}">${m.emoji}</button>`).join('')}
+        </div>
+        <p class="subtle" id="mood-response" style="margin-top:8px;"></p>
+      </div>
+      <div class="task-block">
+        <div class="task-label">БЛІЦ-ПОВТОРЕННЯ</div>
+        <div class="quickfire-list" id="l3-recap-list"></div>
+        <div class="game-score" id="l3-recap-score">Рахунок: 0/${L3_RECAP_ITEMS.length}</div>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ДОМАШНЄ ЗАВДАННЯ</div>
+        <p>Складіть і запишіть діалог (4–6 реплік) між двома персонажами, а також одне складне речення й одне речення з прямою мовою за будь-якою схемою.</p>
+      </div>
+    </div>
+  `;
+}
+function attachL3ReflectHandlers(){
+  attachMoodPicker();
+  genQuickfire('l3-recap-list', L3_RECAP_ITEMS, 'l3-recap-score');
+}
+
 const LESSON_REGISTRY = {
   [SEED_ID]: {
     themeClass: '',
@@ -2087,6 +2456,11 @@ const LESSON_REGISTRY = {
     themeClass: 'theme-plum',
     html: { warmup: l2WarmupHTML, theory: l2TheoryHTML, reading: l2ReadingHTML, practice: l2PracticeHTML, quiz: l2QuizHTML, reflect: l2ReflectHTML },
     attach: { warmup: attachL2WarmupHandlers, theory: attachL2TheoryHandlers, reading: attachL2ReadingHandlers, practice: attachL2PracticeHandlers, quiz: attachQuizHandlers, reflect: attachL2ReflectHandlers },
+  },
+  [SEED3_ID]: {
+    themeClass: 'theme-terracotta',
+    html: { warmup: l3WarmupHTML, theory: l3TheoryHTML, reading: l3ReadingHTML, practice: l3PracticeHTML, quiz: l3QuizHTML, reflect: l3ReflectHTML },
+    attach: { warmup: attachL3WarmupHandlers, theory: attachL3TheoryHandlers, reading: attachL3ReadingHandlers, practice: attachL3PracticeHandlers, quiz: attachQuizHandlers, reflect: attachL3ReflectHandlers },
   },
 };
 
