@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ДЗ — Урок 3. Складне речення. Пряма мова. Діалог</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<script>if(!localStorage.getItem('slovesnist_current_student') && localStorage.getItem('teacher_ok')!=='1'){location.href='../login.html?next='+encodeURIComponent(location.pathname);}</script>
+
+<div class="progress-bar">
+  <a class="back-link" href="lesson-03.html">← до уроку</a>
+  <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+  <div class="stars"></div>
+</div>
+
+<div class="notebook">
+  <div class="page">
+    <span class="tag">Домашнє завдання · Урок 3</span>
+    <h1>Складне речення. Пряма мова. Діалог</h1>
+    <p class="eyebrow-line">Закріпи відмінність складного речення від простого з однорідними присудками та схеми прямої мови.</p>
+
+    <h3>✍️ Перевір себе</h3>
+    <div class="exercise" id="hw3-1">
+      <div class="q">«Дощ ущух, стежка підсохла.» — це речення:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw3-2">
+      <div class="q">«Кіт вигнув спину і замуркотів.» — скільки граматичних основ?</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw3-3">
+      <div class="q">Яка схема відповідає реченню: Вчителька сказала: «Завтра екскурсія».?</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw3-4">
+      <div class="q">У діалозі кожна репліка починається з:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw3-5">
+      <div class="q">У діалозі лапки навколо реплік:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw3-ord1">
+      <div class="q">🧩 Збери складне речення (з комою):</div>
+      <div class="order-pool"></div><div class="order-answer"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw3-ord2">
+      <div class="q">🧩 Збери ще одне речення:</div>
+      <div class="order-pool"></div><div class="order-answer"></div><div class="feedback"></div>
+    </div>
+
+    <h3 style="margin-top:26px;">🧠 Творче завдання</h3>
+    <ul class="checklist" id="hw-list">
+      <li><input type="checkbox" id="hw1"><label for="hw1">Складіть і запишіть діалог (4–6 реплік) між двома персонажами.</label></li>
+      <li><input type="checkbox" id="hw2"><label for="hw2">Додайте одне складне речення й одне речення з прямою мовою за будь-якою схемою.</label></li>
+    </ul>
+
+    <p style="margin-top:26px;">
+      <a class="btn ghost" href="lesson-03.html">← Повернутись до уроку</a>
+      <a class="btn ghost" href="../index.html">На головну</a>
+    </p>
+  </div>
+  <footer class="page-footer">ДЗ до уроку 3 · Синтаксис · 6 клас</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../assets/students.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/lesson-kit.js"></script>
+<script src="../assets/platform.js"></script>
+<script>
+  LessonKit.initChoice(document.getElementById('hw3-1'), [{text:'просте', correct:false},{text:'складне', correct:true}]);
+  LessonKit.initChoice(document.getElementById('hw3-2'), [{text:'1', correct:true},{text:'2', correct:false},{text:'3', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw3-3'), [{text:'А: «П».', correct:true},{text:'«П», — а.', correct:false},{text:'«П?» — а.', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw3-4'), [{text:'лапок', correct:false},{text:'нового рядка й тире', correct:true},{text:'двокрапки', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw3-5'), [{text:'завжди ставлять', correct:false},{text:'ніколи не ставлять', correct:true},{text:'ставлять іноді', correct:false}]);
+  LessonKit.initOrderBuilder(document.getElementById('hw3-ord1'), ['Сонце','сідало,','і','небо','стало','багряним.']);
+  LessonKit.initOrderBuilder(document.getElementById('hw3-ord2'), ['Задзвенів','дзвінок,','і','всі','кинулися','до','виходу.']);
+  LessonKit.setTotalStars(5);
+  LessonKit.initChecklist('#hw-list');
+  Platform.initHomeworkPage('l6-03', 'Урок 3. Складне речення. Пряма мова. Діалог');
+</script>
+</body>
+</html>

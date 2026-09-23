@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вчительська панель — Кабінет словесності</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<div class="notebook">
+  <div class="page">
+    <span class="tag">Тільки для вчительки</span>
+    <h1>Кабінет словесності — панель</h1>
+    <p class="eyebrow-line">Теми для пояснення, список учнів з персональними посиланнями та результати кожного.</p>
+
+    <div id="gate"><p><button class="btn" id="gate-btn">Увійти в панель</button></p></div>
+
+    <div id="dashboard" style="display:none;">
+
+      <div class="grade-tabs" id="grade-tabs"></div>
+
+      <h2>Теми уроків</h2>
+      <p class="eyebrow-line">Відкрийте урок, щоб пояснити тему учням (можна показати на спільному екрані).</p>
+      <div id="topics-list" style="margin-bottom:30px;"></div>
+
+      <h2>Учні та персональні посилання</h2>
+      <p class="eyebrow-line">Додайте учня — система сама згенерує йому окреме посилання. Надішліть це посилання учневі (Viber, Telegram тощо); перейшовши за ним один раз, він більше нічого обирати не буде.</p>
+      <div class="add-student-row">
+        <input type="text" id="new-name" placeholder="Ім'я учня">
+        <select id="new-grade"></select>
+        <button class="btn small" id="add-student-btn">Додати учня</button>
+      </div>
+      <div id="links-list" style="margin-bottom:30px;"></div>
+
+      <h2>Результати</h2>
+      <div class="teacher-toolbar"><div id="loading-msg" class="eyebrow-line">Завантаження даних…</div></div>
+      <div style="overflow-x:auto;">
+        <table class="teacher-table" id="results-table" style="display:none;">
+          <thead><tr id="table-head"></tr></thead>
+          <tbody id="table-body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <p><a href="../index.html">← На головну</a></p>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../assets/students.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/platform.js"></script>
+<script>
+  document.getElementById('gate-btn').addEventListener('click', enter);
+  if (localStorage.getItem('teacher_ok') === '1') enter(true);
+
+  let activeGrade = '6';
+
+  function enter() {
+    if (localStorage.getItem('teacher_ok') !== '1') {
+      const code = prompt('Введіть код доступу вчителя:');
+      if (code === null) return;
+      if (code !== (window.TEACHER_PASSCODE || '')) { alert('Невірний код доступу.'); return; }
+      localStorage.setItem('teacher_ok', '1');
+    }
+    document.getElementById('gate').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    renderGradeTabs();
+    populateGradeSelect();
+    renderTopics();
+    loadLinksAndResults();
+  }
+
+  function baseUrl() { return location.origin + location.pathname.replace(/teacher\/.*$/, ''); }
+
+  function renderGradeTabs() {
+    const wrap = document.getElementById('grade-tabs');
+    wrap.innerHTML = '';
+    Platform.GRADES.forEach(g => {
+      const btn = document.createElement('button');
+      btn.className = 'grade-tab' + (g === activeGrade ? ' active' : '');
+      btn.textContent = g + ' клас';
+      btn.addEventListener('click', () => { activeGrade = g; renderGradeTabs(); renderTopics(); loadLinksAndResults(); });
+      wrap.appendChild(btn);
+    });
+  }
+  function populateGradeSelect() {
+    const sel = document.getElementById('new-grade');
+    sel.innerHTML = Platform.GRADES.map(g => `<option value="${g}">${g} клас</option>`).join('');
+  }
+
+  function renderTopics() {
+    const lessons = Platform.LESSONS[activeGrade] || [];
+    const wrap = document.getElementById('topics-list');
+    wrap.innerHTML = lessons.length ? '' : '<p class="eyebrow-line">Матеріали для ' + activeGrade + ' класу ще не додані.</p>';
+    lessons.forEach(l => {
+      const row = document.createElement('div');
+      row.className = 'link-row';
+      row.innerHTML = `<span><strong>${l.title}</strong><br><span class="addr">${l.topic || ''}</span></span>
+        <a class="btn small" href="../${l.file}" target="_blank">Відкрити урок →</a>`;
+      wrap.appendChild(row);
+    });
+  }
+
+  document.getElementById('add-student-btn').addEventListener('click', () => {
+    const name = document.getElementById('new-name').value.trim();
+    const grade = document.getElementById('new-grade').value;
+    if (!name) { alert('Впишіть ім\u2019я учня'); return; }
+    Platform.addStudent(name, grade).then(() => {
+      document.getElementById('new-name').value = '';
+      loadLinksAndResults();
+    }).catch(e => alert('Не вдалося додати: ' + e));
+  });
+
+  function renderLinks(students) {
+    const wrap = document.getElementById('links-list');
+    wrap.innerHTML = '';
+    if (!students.length) {
+      wrap.innerHTML = '<p class="eyebrow-line">Ще немає жодного учня — додайте першого вище.</p>';
+      return;
+    }
+    students.forEach(s => {
+      const link = baseUrl() + 'login.html?u=' + encodeURIComponent(s.name) + '&g=' + encodeURIComponent(s.grade);
+      const row = document.createElement('div');
+      row.className = 'link-row';
+      row.innerHTML = `
+        <span><strong>${s.name}</strong> · ${s.grade} клас<br><span class="addr">${link}</span></span>
+        <span style="display:flex;gap:8px;">
+          <button class="btn small copy-btn">Копіювати</button>
+          <button class="del-student-btn">Видалити</button>
+        </span>`;
+      row.querySelector('.copy-btn').addEventListener('click', e => {
+        navigator.clipboard.writeText(link).then(() => {
+          e.target.textContent = 'Скопійовано!';
+          setTimeout(() => { e.target.textContent = 'Копіювати'; }, 1500);
+        });
+      });
+      row.querySelector('.del-student-btn').addEventListener('click', () => {
+        if (!confirm('Видалити ' + s.name + ' зі списку? Його збережені результати залишаться в базі.')) return;
+        Platform.removeStudent(s.name).then(loadLinksAndResults);
+      });
+      wrap.appendChild(row);
+    });
+  }
+
+  function pct(earned, total) { return total ? Math.round(earned / total * 100) : 0; }
+
+  function loadLinksAndResults() {
+    document.getElementById('loading-msg').textContent = 'Завантаження даних…';
+    document.getElementById('results-table').style.display = 'none';
+    Platform.getStudentsAsync(activeGrade).then(students => {
+      renderLinks(students);
+      const lessons = Platform.LESSONS[activeGrade] || [];
+      const head = document.getElementById('table-head');
+      head.innerHTML = '<th>Учень</th>' + lessons.map(l => `<th>${l.title.replace(/^Урок \d+\.\s*/, '')}</th>`).join('');
+
+      Platform.getAllProgress(students).then(data => {
+        document.getElementById('loading-msg').textContent = students.length ? '' : 'Немає учнів у цьому класі.';
+        const body = document.getElementById('table-body');
+        body.innerHTML = '';
+        students.forEach(s => {
+          const row = document.createElement('tr');
+          let cells = `<td><strong>${s.name}</strong></td>`;
+          lessons.forEach(l => {
+            const d = data[s.name] && data[s.name][l.id];
+            if (!d) { cells += `<td><span class="hw-pill none">не розпочато</span></td>`; return; }
+            const quizPct = pct(d.quizScore || 0, d.quizTotal || 0);
+            const quizLabel = d.quizTotal ? `${d.quizScore || 0}/${d.quizTotal} на тесті` : 'тест ще не пройдено';
+            const hwLabel = d.homeworkTotal
+              ? (d.homeworkComplete ? 'ДЗ виконано' : `ДЗ ${d.homeworkDone || 0}/${d.homeworkTotal}`)
+              : (d.hwTotalStars ? `ДЗ ${d.hwStars || 0}/${d.hwTotalStars} ⭐` : 'ДЗ —');
+            const hwClass = d.homeworkComplete ? 'done' : ((d.homeworkDone || d.hwStars) ? 'partial' : 'none');
+            cells += `<td>
+              <div class="cell-progress"><div class="cell-track"><div class="cell-fill" style="width:${quizPct}%"></div></div><span>${quizLabel}</span></div>
+              <span class="hw-pill ${hwClass}">${hwLabel}</span>
+            </td>`;
+          });
+          row.innerHTML = cells;
+          body.appendChild(row);
+        });
+        document.getElementById('results-table').style.display = students.length ? 'table' : 'none';
+      });
+    });
+  }
+</script>
+</body>
+</html>

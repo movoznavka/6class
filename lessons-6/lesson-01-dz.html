@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ДЗ — Урок 1. Словосполучення і речення</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<script>if(!localStorage.getItem('slovesnist_current_student') && localStorage.getItem('teacher_ok')!=='1'){location.href='../login.html?next='+encodeURIComponent(location.pathname);}</script>
+
+<div class="progress-bar">
+  <a class="back-link" href="lesson-01.html">← до уроку</a>
+  <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+  <div class="stars"></div>
+</div>
+
+<div class="notebook">
+  <div class="page">
+    <span class="tag">Домашнє завдання · Урок 1</span>
+    <h1>Словосполучення і речення</h1>
+    <p class="eyebrow-line">Закріпи різницю між словосполученням і реченням та вміння знаходити головні й другорядні члени.</p>
+
+    <h3>✍️ Перевір себе</h3>
+    <div class="exercise" id="hw1-1">
+      <div class="q">Яке з поєднань слів є словосполученням?</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw1-2">
+      <div class="q">«Мама читає книжку.» — це:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw1-3">
+      <div class="q">У словосполученні «яскраве сонце» головне слово:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw1-4">
+      <div class="q">Яке слово в реченні «Швидкий заєць стрибнув у кущі» є означенням?</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw1-5">
+      <div class="q">Присудок відповідає на питання:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw1-ord1">
+      <div class="q">🧩 Збери речення зі слів у правильному порядку:</div>
+      <div class="order-pool"></div><div class="order-answer"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw1-ord2">
+      <div class="q">🧩 Збери ще одне речення:</div>
+      <div class="order-pool"></div><div class="order-answer"></div><div class="feedback"></div>
+    </div>
+
+    <h3 style="margin-top:26px;">🧠 Творче завдання</h3>
+    <ul class="checklist" id="hw-list">
+      <li><input type="checkbox" id="hw1"><label for="hw1">Складіть і запишіть 4 речення (одне — питальне, одне — спонукальне, два — розповідні) про свій сьогоднішній день.</label></li>
+      <li><input type="checkbox" id="hw2"><label for="hw2">У двох із написаних речень підкресліть головні та другорядні члени.</label></li>
+    </ul>
+
+    <p style="margin-top:26px;">
+      <a class="btn ghost" href="lesson-01.html">← Повернутись до уроку</a>
+      <a class="btn ghost" href="../index.html">На головну</a>
+    </p>
+  </div>
+  <footer class="page-footer">ДЗ до уроку 1 · Синтаксис · 6 клас</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../assets/students.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/lesson-kit.js"></script>
+<script src="../assets/platform.js"></script>
+<script>
+  LessonKit.initChoice(document.getElementById('hw1-1'), [{text:'день і ніч', correct:false},{text:'яскраве сонце', correct:true},{text:'я малюю', correct:false},{text:'весело й тепло', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw1-2'), [{text:'словосполучення', correct:false},{text:'речення', correct:true},{text:'слово', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw1-3'), [{text:'яскраве', correct:false},{text:'сонце', correct:true}]);
+  LessonKit.initChoice(document.getElementById('hw1-4'), [{text:'заєць', correct:false},{text:'швидкий', correct:true},{text:'стрибнув', correct:false},{text:'кущі', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw1-5'), [{text:'який? чий?', correct:false},{text:'що робить? який є?', correct:true},{text:'де? коли?', correct:false}]);
+  LessonKit.initOrderBuilder(document.getElementById('hw1-ord1'), ['Малий','хлопчик','швидко','зшив','рюкзак']);
+  LessonKit.initOrderBuilder(document.getElementById('hw1-ord2'), ['Веселий','песик','біг','стежкою']);
+  LessonKit.setTotalStars(5);
+  LessonKit.initChecklist('#hw-list');
+  Platform.initHomeworkPage('l6-01', 'Урок 1. Словосполучення і речення');
+</script>
+</body>
+</html>

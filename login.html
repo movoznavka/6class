@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Вхід — Кабінет словесності</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div class="notebook">
+  <div class="login-wrap">
+    <div class="login-card">
+      <span class="tag">Кабінет словесності</span>
+      <h1 id="login-title">Оберіть своє ім'я</h1>
+      <p class="eyebrow-line" id="login-hint">Якщо вчителька надсилала вам персональне посилання — просто перейдіть за ним ще раз, і вхід відбудеться автоматично.</p>
+      <div class="student-grid" id="student-grid"></div>
+      <p class="login-empty" id="login-empty" style="display:none;">Поки що немає жодного учня в списку. Зверніться до вчительки.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="assets/students.js"></script>
+<script src="assets/firebase-config.js"></script>
+<script src="assets/platform.js"></script>
+<script>
+  const params = new URLSearchParams(location.search);
+  const nextUrl = params.get('next') || 'index.html';
+  const u = params.get('u'), g = params.get('g');
+
+  if (u && g) {
+    Platform.setCurrentStudent(u, g);
+    location.href = nextUrl;
+  } else {
+    Platform.getStudentsAsync().then(students => {
+      const grid = document.getElementById('student-grid');
+      if (!students.length) {
+        document.getElementById('login-empty').style.display = 'block';
+        return;
+      }
+      students.forEach(s => {
+        const btn = document.createElement('button');
+        btn.className = 'student-btn';
+        btn.textContent = s.name;
+        btn.addEventListener('click', () => {
+          Platform.setCurrentStudent(s.name, s.grade);
+          location.href = nextUrl;
+        });
+        grid.appendChild(btn);
+      });
+    });
+  }
+</script>
+</body>
+</html>
