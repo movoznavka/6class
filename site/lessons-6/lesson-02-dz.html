@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ДЗ — Урок 2. Звертання. Вставні слова. Однорідні члени</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<script>if(!localStorage.getItem('slovesnist_current_student') && localStorage.getItem('teacher_ok')!=='1'){location.href='../login.html?next='+encodeURIComponent(location.pathname);}</script>
+
+<div class="progress-bar">
+  <a class="back-link" href="lesson-02.html">← до уроку</a>
+  <div class="progress-track"><div class="progress-fill" style="width:0%"></div></div>
+  <div class="stars"></div>
+</div>
+
+<div class="notebook">
+  <div class="page">
+    <span class="tag">Домашнє завдання · Урок 2</span>
+    <h1>Звертання. Вставні слова. Однорідні члени речення</h1>
+    <p class="eyebrow-line">Закріпи пунктуацію при звертаннях, вставних словах і однорідних членах.</p>
+
+    <h3>✍️ Перевір себе</h3>
+    <div class="exercise" id="hw2-1">
+      <div class="q">«Максиме, ти вже вдома?» — виділене слово це:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw2-2">
+      <div class="q">«Це, мабуть, найкращий день.» — виділене слово це:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw2-3">
+      <div class="q">Чи є звертання членом речення?</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw2-4">
+      <div class="q">«Ми купили зошити, ручки й лінійки.» — виділені слова це:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw2-5">
+      <div class="q">Перед узагальнювальним словом після переліку однорідних членів зазвичай ставимо:</div>
+      <div class="choices"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw2-ord1">
+      <div class="q">🧩 Збери речення зі звертанням:</div>
+      <div class="order-pool"></div><div class="order-answer"></div><div class="feedback"></div>
+    </div>
+    <div class="exercise" id="hw2-ord2">
+      <div class="q">🧩 Збери ще одне речення:</div>
+      <div class="order-pool"></div><div class="order-answer"></div><div class="feedback"></div>
+    </div>
+
+    <h3 style="margin-top:26px;">🧠 Творче завдання</h3>
+    <ul class="checklist" id="hw-list">
+      <li><input type="checkbox" id="hw1"><label for="hw1">Напишіть коротку листівку другові чи подрузі (3–4 речення) зі звертанням і хоча б одним вставним словом.</label></li>
+      <li><input type="checkbox" id="hw2"><label for="hw2">Підкресліть у листівці однорідні члени, якщо вони є.</label></li>
+    </ul>
+
+    <p style="margin-top:26px;">
+      <a class="btn ghost" href="lesson-02.html">← Повернутись до уроку</a>
+      <a class="btn ghost" href="../index.html">На головну</a>
+    </p>
+  </div>
+  <footer class="page-footer">ДЗ до уроку 2 · Синтаксис · 6 клас</footer>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../assets/students.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/lesson-kit.js"></script>
+<script src="../assets/platform.js"></script>
+<script>
+  LessonKit.initChoice(document.getElementById('hw2-1'), [{text:'звертання', correct:true},{text:'вставне слово', correct:false},{text:'однорідний член', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw2-2'), [{text:'звертання', correct:false},{text:'вставне слово', correct:true},{text:'однорідний член', correct:false}]);
+  LessonKit.initChoice(document.getElementById('hw2-3'), [{text:'так, головним', correct:false},{text:'так, другорядним', correct:false},{text:'ні, не є', correct:true}]);
+  LessonKit.initChoice(document.getElementById('hw2-4'), [{text:'звертання', correct:false},{text:'вставні слова', correct:false},{text:'однорідні члени', correct:true}]);
+  LessonKit.initChoice(document.getElementById('hw2-5'), [{text:'кому', correct:false},{text:'двокрапку', correct:true},{text:'нічого', correct:false}]);
+  LessonKit.initOrderBuilder(document.getElementById('hw2-ord1'), ['Оленко,','ти','вже','написала','твір?']);
+  LessonKit.initOrderBuilder(document.getElementById('hw2-ord2'), ['На','щастя,','дощ','нарешті','скінчився.']);
+  LessonKit.setTotalStars(5);
+  LessonKit.initChecklist('#hw-list');
+  Platform.initHomeworkPage('l6-02', 'Урок 2. Звертання. Вставні слова. Однорідні члени речення');
+</script>
+</body>
+</html>

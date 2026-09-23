@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Урок 1. Словосполучення і речення — 6 клас</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<script>if(!localStorage.getItem('slovesnist_current_student') && localStorage.getItem('teacher_ok')!=='1'){location.href='../login.html?next='+encodeURIComponent(location.pathname);}</script>
+
+<div class="progress-bar">
+  <a class="back-link" href="../index.html">← Усі уроки</a>
+</div>
+<div id="lesson-shell"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../assets/students.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/platform.js"></script>
+<script src="../assets/lesson-engine.js"></script>
+<script>
+/* ---------- дані уроку 1 ---------- */
+const QF_ITEMS = [
+  {t:'«Тепла оселя» — це словосполучення.', answer:true},
+  {t:'Підмет і присудок разом утворюють словосполучення.', answer:false},
+  {t:'У реченні завжди є граматична основа.', answer:true},
+  {t:'«День і ніч» (через сполучник) — словосполучення.', answer:false},
+];
+function warmupHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('clock')}<h3 style="margin-bottom:0;">Пригадаймо перед стартом</h3></div>
+      <div class="task-block" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="task-label">ПРИГАДАЙМО</div>
+        <div class="task-q">Перш ніж почати, обміркуйте усно в парі:</div>
+        <div class="callout">
+          <p style="margin-bottom:8px;"><strong>1.</strong> Чим словосполучення відрізняється від речення?</p>
+          <p style="margin-bottom:0;"><strong>2.</strong> Що таке головні й другорядні члени речення — наведіть приклад із власного мовлення сьогодні.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bulb')}<h3 style="margin-bottom:0;">Гра «Так чи ні»</h3></div>
+      <p class="subtle">Швидко натисніть «Так» або «Ні» для кожного твердження.</p>
+      <div class="quickfire-list" id="qf-list"></div>
+      <div class="game-score" id="qf-score">Рахунок: 0/${QF_ITEMS.length}</div>
+    </div>`;
+}
+
+function theoryHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('book')}<h3 style="margin-bottom:0;">Словосполучення</h3></div>
+      <div class="def-box"><span class="term">Словосполучення</span> — це поєднання щонайменше двох самостійних слів, одне з яких головне, а друге — залежне.</div>
+      <p class="example">прокидаюся <strong>(коли?)</strong> рано · пишаюся <strong>(чим?)</strong> успіхами · зошит <strong>(який?)</strong> новий</p>
+      <div class="callout amber"><strong>Увага:</strong> підмет із присудком (<em>я снідаю</em>) та рівноправні слова, з'єднані сполучником (<em>день і ніч</em>), словосполученнями НЕ є.</div>
+
+      <h3 style="margin-top:26px;">Речення</h3>
+      <div class="def-box"><span class="term">Речення</span> — одне або кілька слів, що виражають відносно закінчену думку. У реченні є граматична основа з одного або двох головних членів.</div>
+      <p class="example">Сонячний ранок. · Ми вирушаємо в похід.</p>
+
+      <h4>Речення за метою висловлювання</h4>
+      <div class="match-grid" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px 22px;">
+        <div class="match-item" style="border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:#fff;"><strong>Розповідне</strong><br>Олег тренується.</div>
+        <div class="match-item" style="border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:#fff;"><strong>Питальне</strong><br>Олег тренується?</div>
+        <div class="match-item" style="border:1.5px solid var(--line);border-radius:8px;padding:8px 12px;background:#fff;"><strong>Спонукальне</strong><br>Олеже, тренуйся!</div>
+      </div>
+      <p class="subtle" style="margin-top:10px;">У кінці речення ставимо крапку, знак питання, знак оклику або три крапки.</p>
+
+      <h4>Гра «Постав знак»</h4>
+      <p class="subtle">Оберіть правильний розділовий знак для кожного речення.</p>
+      <div id="punct-list"></div>
+
+      <h4>Гра «Який це тип речення?»</h4>
+      <p class="subtle">Клацніть на правильний варіант.</p>
+      <div id="type-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Члени речення</h3></div>
+      <p>Головні члени — граматична основа речення: <strong>підмет</strong> (про кого / про що йдеться) і <strong>присудок</strong> (що робить підмет / який він є).</p>
+      <p>Другорядні члени пояснюють головні: <strong>означення</strong> (який? чий?), <strong>додаток</strong> (кого? що? кому?), <strong>обставина</strong> (де? коли? як? чому?).</p>
+      <div class="callout"><strong>Приклад розбору:</strong> <em>Веселий песик швидко біг стежкою.</em><br>песик — підмет; біг — присудок; веселий — означення; швидко — обставина (як?); стежкою — обставина (де?).</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('check')}<h3 style="margin-bottom:0;">Гра «Перевір себе»</h3></div>
+      <p class="subtle">Клацніть на картку, щоб перевернути й побачити відповідь.</p>
+      <div class="flip-grid" id="flip-grid"></div>
+    </div>`;
+}
+const FLIP_ITEMS = [
+  {front:'Підмет', back:'хто? що?'}, {front:'Присудок', back:'що робить? який є?'},
+  {front:'Означення', back:'який? чий?'}, {front:'Додаток', back:'кого? що? кому?'}, {front:'Обставина', back:'де? коли? як?'},
+];
+const PUNCT_ITEMS_RAW = [
+  {s:'Дощ ущух', opts:['.','?','!'], correct:0},
+  {s:'Ти вже зробив уроки', opts:['.','?','!'], correct:1},
+  {s:'Тікай, вода прибуває', opts:['.','?','!'], correct:2},
+];
+const TYPE_ITEMS = [
+  {s:'Ти вже нагодував кота?', opts:['Розповідне','Питальне','Спонукальне'], correct:1},
+  {s:'Зачекай на мене біля брами!', opts:['Розповідне','Питальне','Спонукальне'], correct:2},
+  {s:'Осінь цього року затрималася.', opts:['Розповідне','Питальне','Спонукальне'], correct:0},
+];
+
+function readingHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bubble')}<h3 style="margin-bottom:0;">Читання й аналіз тексту</h3></div>
+      <p class="subtle" style="margin-bottom:16px;">Прочитайте текст. Подумайте: чи варто переказувати чутки, яких сам не перевірив?</p>
+      <div class="reading-text">
+        <p><strong>ШЕПІТ НА ПЕРЕРВІ</strong></p>
+        <p>На великій перерві до мене підбігла Соня й потягла за рукав у куток коридору. «Тільки нікому!» — прошепотіла вона й розповіла, що нібито Максим із сьомого-Б посварився з тренером і його заберуть з команди перед самими змаганнями.</p>
+        <p>Я хотів був одразу побігти й переказати цю новину Артему, та раптом згадав, як минулого тижня подібна чутка про новеньку дівчинку виявилася вигадкою — просто хтось не так зрозумів жарт. Тож я вирішив спершу спитати самого Максима.</p>
+        <p>Після уроків я підійшов до нього. Максим здивовано підняв брови: жодної сварки не було, просто тренер попросив його потренуватися окремо, бо готує на роль капітана. Якби я одразу побіг ділитися чуткою, у школі до вечора говорили б зовсім інше — і, можливо, образили б людину даремно.</p>
+        <p>Того дня я зрозумів просте правило: перш ніж повторювати чиюсь таємницю чи здогад, краще зупинитися і спитати того, кого це стосується.</p>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 1 · Чи є в тексті окличні речення?</div>
+        <div class="opt-list" id="reading-q2"></div>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 2 · Гра «Який це тип речення?»</div>
+        <p class="subtle">Ці речення побудовані за подіями тексту. Визначте тип кожного.</p>
+        <div id="reading-type-list"></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bulb')}<h3 style="margin-bottom:0;">Гра «Правда чи вигадка»</h3></div>
+      <p class="subtle">Перевірте, чи уважно ви прочитали текст.</p>
+      <div class="quickfire-list" id="truth-list"></div>
+      <div class="game-score" id="truth-score">Рахунок: 0/${TRUTH_ITEMS.length}</div>
+    </div>`;
+}
+const READING_TYPE_ITEMS = [
+  {s:'Соня прошепотіла новину в куточку коридору.', opts:['Розповідне','Питальне','Спонукальне'], correct:0},
+  {s:'Ти вже чув, що сталося з Максимом?', opts:['Розповідне','Питальне','Спонукальне'], correct:1},
+  {s:'Спитай його самого, перш ніж повторювати!', opts:['Розповідне','Питальне','Спонукальне'], correct:2},
+];
+const TRUTH_ITEMS = [
+  {t:'Соня розповіла чутку про Максима з 7-Б.', answer:true},
+  {t:'Максим справді посварився з тренером.', answer:false},
+  {t:'Розповідач одразу побіг переказувати новину Артему.', answer:false},
+];
+function attachReadingQ2(){
+  const wrap = document.getElementById('reading-q2');
+  if (!wrap) return;
+  const opts = [
+    {t:'Так, є — «Тільки нікому!» вимовлено з окличною інтонацією.', correct:true},
+    {t:'Ні, у тексті всі речення розповідні.', correct:false},
+  ];
+  wrap.innerHTML = opts.map((o,i)=>`<label class="opt" data-i="${i}"><input type="radio" name="read-q2" value="${i}"><span>${o.t}</span></label>`).join('');
+  wrap.querySelectorAll('.opt').forEach((el,i) => {
+    el.addEventListener('click', () => {
+      wrap.querySelectorAll('.opt').forEach(o => o.classList.remove('correct','incorrect'));
+      el.classList.add(opts[i].correct ? 'correct' : 'incorrect');
+    });
+  });
+}
+
+function practiceHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 1. Гра «Кошики»</h3></div>
+      <p class="subtle">Клацніть на слово, а потім — на потрібний кошик.</p>
+      <div class="pool-row" id="p1-pool"></div>
+      <div class="basket-row">
+        <div class="basket" data-basket-for="p1-pool" data-type="phrase"><h5>🧺 Словосполучення</h5><div id="basket-phrase"></div></div>
+        <div class="basket" data-basket-for="p1-pool" data-type="not"><h5>🚫 НЕ словосполучення</h5><div id="basket-not"></div></div>
+      </div>
+      <div class="game-score" id="p1-score">Рахунок: 0/${P1_ITEMS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bubble')}<h3 style="margin-bottom:0;">Вправа 2. Гра «Головне чи залежне?»</h3></div>
+      <p class="subtle">У кожному словосполученні клацніть на головне слово.</p>
+      <div id="head-word-list"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 3. Гра «Розбери речення»</h3></div>
+      <p class="task-q">Речення: <em id="p3-sentence"></em></p>
+      <p class="subtle">Клацніть слово, тоді клацніть його роль.</p>
+      <div class="pool-row" id="p3-pool"></div>
+      <div class="chip-row" id="p3-roles" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;"></div>
+      <div class="task-block" style="margin-top:14px;"><div id="p3-result"></div></div>
+      <div class="game-score" id="p3-score">Рахунок: 0/${P3_WORDS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('check')}<h3 style="margin-bottom:0;">Вправа 4. Гра «Знайди пару»</h3></div>
+      <p class="subtle">Клацніть на член речення зліва, а потім — на його питання справа.</p>
+      <div class="match-game-grid"><div class="match-pile" id="match-left"></div><div class="match-pile" id="match-right"></div></div>
+      <div class="game-score" id="match-score">Знайдено пар: 0/${MATCH_PAIRS.length}</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 5. Гра «Склади речення»</h3></div>
+      <p class="subtle">Клацайте слова в правильному порядку.</p>
+      <div class="callout" id="builder-target" style="min-height:52px;font-family:'Lora',serif;font-size:16.5px;"></div>
+      <div class="pool-row" id="builder-pool" style="margin-top:12px;"></div>
+      <button class="check-btn" onclick="checkBuilder()">Перевірити</button>
+      <button class="nav-btn secondary" style="padding:9px 16px;font-size:13px;margin-top:14px;margin-left:8px;" onclick="attachBuilderGame()">Перемішати ще раз</button>
+      <div id="builder-feedback" class="feedback"></div>
+    </div>`;
+}
+const P1_ITEMS = [
+  {t:'тепла оселя', correctType:'phrase'}, {t:'він читає', correctType:'not'},
+  {t:'радіти успіху', correctType:'phrase'}, {t:'сонце і вітер', correctType:'not'}, {t:'бігти швидко', correctType:'phrase'},
+];
+const HEAD_WORD_ITEMS = [
+  {phrase:['старенький','будиночок'], head:1, question:'який?'},
+  {phrase:['прочитати','книжку'], head:0, question:'що?'},
+  {phrase:['йти','лісом'], head:0, question:'де? чим?'},
+];
+function attachHeadWordGame(){
+  const wrap = document.getElementById('head-word-list');
+  if (!wrap) return;
+  wrap.innerHTML = HEAD_WORD_ITEMS.map((it,i) => `
+    <div class="punct-row" data-i="${i}">
+      <span class="punct-sentence" style="font-style:normal;">
+        <button class="qf-btn" data-wi="0" style="border-radius:8px;">${it.phrase[0]}</button>
+        <button class="qf-btn" data-wi="1" style="border-radius:8px;">${it.phrase[1]}</button>
+      </span>
+      <span class="qf-badge" id="hw-result-${i}"></span>
+    </div>`).join('');
+  wrap.querySelectorAll('.punct-row').forEach((row,i) => {
+    row.querySelectorAll('button').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (row.dataset.done) return;
+        const wi = parseInt(btn.dataset.wi);
+        const isRight = wi === HEAD_WORD_ITEMS[i].head;
+        btn.style.borderColor = isRight ? 'var(--correct)' : 'var(--incorrect)';
+        btn.style.background = isRight ? 'var(--correct-bg)' : 'var(--incorrect-bg)';
+        if (isRight) { row.dataset.done = '1'; document.getElementById('hw-result-'+i).textContent = 'питання: ' + HEAD_WORD_ITEMS[i].question; }
+      });
+    });
+  });
+}
+const P3_SENTENCE = 'Малий хлопчик швидко зшив дірявий рюкзак.';
+const P3_WORDS = [
+  {w:'Малий', role:'означення'}, {w:'хлопчик', role:'підмет'}, {w:'швидко', role:'обставина'},
+  {w:'зшив', role:'присудок'}, {w:'дірявий', role:'означення'}, {w:'рюкзак', role:'додаток'},
+];
+const P3_ROLES = ['підмет','присудок','означення','додаток','обставина'];
+let p3State = [], p3Selected = null, p3Score = 0;
+function renderP3Pool(){
+  const pool = document.getElementById('p3-pool');
+  if (!pool) return;
+  pool.innerHTML = p3State.filter(it => !it.placed).map(it => `<span class="basket-item" data-i="${it.i}">${it.w}</span>`).join('');
+  pool.querySelectorAll('.basket-item').forEach(el => {
+    el.addEventListener('click', e => {
+      e.stopPropagation();
+      pool.querySelectorAll('.basket-item').forEach(x => x.style.outline = '');
+      el.style.outline = '2px solid var(--sky)';
+      p3Selected = parseInt(el.dataset.i);
+    });
+  });
+}
+function pickRole(role){
+  if (p3Selected === null) return;
+  const item = p3State.find(it => it.i === p3Selected);
+  if (!item || item.placed) return;
+  item.placed = true;
+  const isRight = role === item.role;
+  if (isRight) p3Score++;
+  const result = document.getElementById('p3-result');
+  const span = document.createElement('span');
+  span.className = 'basket-item ' + (isRight ? 'placed-correct' : 'placed-wrong');
+  span.style.display = 'block'; span.style.marginBottom = '6px';
+  span.textContent = `${item.w} — ${role}` + (isRight ? ' ✓' : ` ✕ (правильно: ${item.role})`);
+  result.appendChild(span);
+  p3Selected = null;
+  renderP3Pool();
+  const scoreEl = document.getElementById('p3-score');
+  if (scoreEl) scoreEl.textContent = `Рахунок: ${p3Score}/${p3State.length}`;
+}
+function attachSentenceRoleGame(){
+  document.getElementById('p3-sentence').textContent = P3_SENTENCE;
+  p3State = P3_WORDS.map((it,i) => ({...it, i, placed:false}));
+  p3Score = 0; p3Selected = null;
+  document.getElementById('p3-result').innerHTML = '';
+  renderP3Pool();
+  const rolesWrap = document.getElementById('p3-roles');
+  rolesWrap.innerHTML = P3_ROLES.map(r => `<button class="choice-btn" data-role="${r}">${r}</button>`).join('');
+  rolesWrap.querySelectorAll('button').forEach(btn => btn.addEventListener('click', () => pickRole(btn.dataset.role)));
+}
+const MATCH_PAIRS = [
+  {left:'Підмет', right:'хто? що?'}, {left:'Присудок', right:'що робить?'}, {left:'Означення', right:'який? чий?'},
+  {left:'Додаток', right:'кого? що?'}, {left:'Обставина', right:'де? коли?'},
+];
+const BUILDER_WORDS = ['Веселий','песик','швидко','біг','стежкою'];
+let builderHandle = null;
+function attachBuilderGame(){ builderHandle = LessonEngine.genBuilder('builder-target','builder-pool', BUILDER_WORDS); }
+function checkBuilder(){ if (builderHandle) builderHandle.check('builder-feedback', BUILDER_WORDS.join(' ')); }
+
+function reflectHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bulb')}<h3 style="margin-bottom:0;">Підсумок уроку</h3></div>
+      <p>Сьогодні ми з'ясували різницю між словосполученням і реченням, повторили типи речень за метою висловлювання та навчилися знаходити головні й другорядні члени речення.</p>
+      <div class="task-block" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="task-label">ЯК ПРОЙШОВ УРОК?</div>
+        <div class="mood-row" id="mood-row">${LessonEngine.moodRow()}</div>
+        <p class="subtle" id="mood-response" style="margin-top:8px;"></p>
+      </div>
+      <div class="task-block">
+        <div class="task-label">БЛІЦ-ПОВТОРЕННЯ</div>
+        <div class="quickfire-list" id="recap-list"></div>
+        <div class="game-score" id="recap-score">Рахунок: 0/${RECAP_ITEMS.length}</div>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ДОМАШНЄ ЗАВДАННЯ</div>
+        <p>Повне інтерактивне ДЗ до цього уроку — <a href="lesson-01-dz.html">відкрити ДЗ →</a></p>
+      </div>
+    </div>`;
+}
+const RECAP_ITEMS = [
+  {t:'Означення відповідає на питання який? чий?', answer:true},
+  {t:'Присудок — це другорядний член речення.', answer:false},
+  {t:'У кінці спонукального речення може стояти знак оклику.', answer:true},
+];
+
+/* ---------- ініціалізація ---------- */
+const hook = Platform.initLessonPage('l6-01', 'Урок 1. Словосполучення і речення');
+LessonEngine.init({
+  title: 'Словосполучення і речення. Головні й другорядні члени речення',
+  topic: 'Синтаксис · §4–5',
+  html: { warmup: warmupHTML, theory: theoryHTML, reading: readingHTML, practice: practiceHTML, quiz: () => LessonEngine.quizHTML(QUIZ), reflect: reflectHTML },
+  attach: {
+    warmup: () => LessonEngine.genQuickfire('qf-list', QF_ITEMS, 'qf-score'),
+    theory: () => { LessonEngine.genFlipGrid('flip-grid', FLIP_ITEMS); LessonEngine.genChoiceRows('punct-list', PUNCT_ITEMS_RAW); LessonEngine.genChoiceRows('type-list', TYPE_ITEMS); },
+    reading: () => { attachReadingQ2(); LessonEngine.genChoiceRows('reading-type-list', READING_TYPE_ITEMS); LessonEngine.genQuickfire('truth-list', TRUTH_ITEMS, 'truth-score'); },
+    practice: () => {
+      LessonEngine.genBasketGame('p1-pool', [{type:'phrase', elId:'basket-phrase'},{type:'not', elId:'basket-not'}], P1_ITEMS, 'p1-score');
+      attachHeadWordGame();
+      attachSentenceRoleGame();
+      LessonEngine.genMatchGame('match-left','match-right','match-score', MATCH_PAIRS);
+      attachBuilderGame();
+    },
+    quiz: () => LessonEngine.attachQuizHandlers(),
+    reflect: () => { LessonEngine.attachMoodPicker(); LessonEngine.genQuickfire('recap-list', RECAP_ITEMS, 'recap-score'); },
+  },
+  onQuizDone: (score, total) => hook && hook.onQuizDone(score, total),
+});
+const QUIZ = [
+  {q:'Яке з поєднань слів є словосполученням?', opts:['день і ніч','я малюю','яскравий малюнок','весело й тепло'], correct:2},
+  {q:'У словосполученні «читати книжку» головне слово:', opts:['читати','книжку','обидва рівноправні','жодне'], correct:0},
+  {q:'Речення «Чи підеш ти сьогодні на тренування?» за метою висловлювання:', opts:['розповідне','питальне','спонукальне','неможливо визначити'], correct:1},
+  {q:'Яке речення є спонукальним?', opts:['Дощ ущух.','Дощ ущух?','Зачекай, поки дощ ущухне!','Дощ, мабуть, ущухне.'], correct:2},
+  {q:'Підмет і присудок разом утворюють:', opts:['словосполучення','граматичну основу речення','другорядний член','односкладне слово'], correct:1},
+  {q:'На яке питання відповідає означення?', opts:['де? коли?','кого? що?','який? чий?','як? чому?'], correct:2},
+  {q:'У реченні «Учора ми довго гуляли лісовою стежкою» обставина місця — це слово:', opts:['учора','довго','гуляли','стежкою'], correct:3},
+  {q:'Що ставимо в кінці розповідного речення, вимовленого спокійно?', opts:['знак оклику','крапку','знак питання','кому'], correct:1},
+  {q:'У словосполученні «швидко бігти» залежне слово відповідає на питання:', opts:['який?','як?','кого?','де?'], correct:1},
+  {q:'Яке слово в реченні «Малий хлопчик зшив рюкзак» є додатком?', opts:['малий','хлопчик','зшив','рюкзак'], correct:3},
+];
+</script>
+</body>
+</html>

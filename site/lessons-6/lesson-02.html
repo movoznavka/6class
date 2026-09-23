@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Урок 2. Звертання. Вставні слова. Однорідні члени речення — 6 клас</title>
+<link rel="stylesheet" href="../assets/style.css">
+</head>
+<body>
+<script>if(!localStorage.getItem('slovesnist_current_student') && localStorage.getItem('teacher_ok')!=='1'){location.href='../login.html?next='+encodeURIComponent(location.pathname);}</script>
+
+<div class="progress-bar"><a class="back-link" href="../index.html">← Усі уроки</a></div>
+<div id="lesson-shell"></div>
+
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script src="../assets/students.js"></script>
+<script src="../assets/firebase-config.js"></script>
+<script src="../assets/platform.js"></script>
+<script src="../assets/lesson-engine.js"></script>
+<script>
+const L2_QF_ITEMS = [
+  {t:'«Олю, ходи сюди!» — слово «Олю» є звертанням.', answer:true},
+  {t:'Звертання завжди стоїть лише на початку речення.', answer:false},
+  {t:'Вставні слова відповідають на питання членів речення.', answer:false},
+  {t:'«На жаль» — приклад вставного слова.', answer:true},
+];
+function warmupHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('clock')}<h3 style="margin-bottom:0;">Пригадаймо перед стартом</h3></div>
+      <div class="task-block" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="task-label">ПРИГАДАЙМО</div>
+        <div class="task-q">Обміркуйте усно в парі:</div>
+        <div class="callout">
+          <p style="margin-bottom:8px;"><strong>1.</strong> Що таке звертання і навіщо воно потрібне в мовленні?</p>
+          <p style="margin-bottom:0;"><strong>2.</strong> Пригадайте одне вставне слово, яке самі вживаєте щодня.</p>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bulb')}<h3 style="margin-bottom:0;">Гра «Так чи ні»</h3></div>
+      <p class="subtle">Швидко натисніть «Так» або «Ні» для кожного твердження.</p>
+      <div class="quickfire-list" id="qf-list"></div>
+      <div class="game-score" id="qf-score">Рахунок: 0/${L2_QF_ITEMS.length}</div>
+    </div>`;
+}
+
+function theoryHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('book')}<h3 style="margin-bottom:0;">Звертання</h3></div>
+      <div class="def-box"><span class="term">Звертання</span> — слово або словосполучення, що називає особу чи предмет, до яких звернена мова. Звертання НЕ є членом речення і на письмі виділяється комами.</div>
+      <p class="example">Оленко, ти вже прийшла? · Ти вже прийшла, Оленко? · Ти, Оленко, вже прийшла?</p>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bubble')}<h3 style="margin-bottom:0;">Вставні слова</h3></div>
+      <div class="def-box"><span class="term">Вставні слова</span> виражають ставлення мовця до висловленого. Вони теж НЕ є членом речення і виділяються комами.</div>
+      <p><strong>Невпевненість:</strong> мабуть, можливо, здається · <strong>Емоційна оцінка:</strong> на щастя, на жаль · <strong>Джерело інформації:</strong> кажуть, на мою думку · <strong>Зв'язок думок:</strong> по-перше, отже, до речі</p>
+      <h4>Гра «Перевір себе»</h4>
+      <p class="subtle">Клацніть картку, щоб перевернути й побачити приклади.</p>
+      <div class="flip-grid" id="flip-grid"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Однорідні члени речення</h3></div>
+      <div class="def-box"><span class="term">Однорідні члени</span> відповідають на те саме питання й залежать від одного й того самого слова.</div>
+      <p>О, О, О — коми між усіма (<em>купатися, читати, малювати</em>) · О і О — кома не ставиться (<em>сік та вода</em>) · О, і О, і О — коми перед кожним «і» · Узагальнювальне слово: двокрапка або тире.</p>
+      <h4>Гра «Що це?»</h4>
+      <div id="type-list"></div>
+      <h4>Гра «Скільки ком?»</h4>
+      <p class="subtle">Порахуйте, скільки ком має бути в реченні (без розділових знаків).</p>
+      <div id="comma-list"></div>
+    </div>`;
+}
+const L2_FLIP_ITEMS = [
+  {front:'Невпевненість', back:'мабуть, можливо, здається'}, {front:'Емоційна оцінка', back:'на щастя, на жаль'},
+  {front:'Джерело інформації', back:'кажуть, на мою думку'}, {front:"Зв'язок думок", back:'по-перше, отже, до речі'},
+];
+const L2_TYPE_ITEMS = [
+  {s:'«Максиме, зачекай на мене!» — виділене слово це…', opts:['Звертання','Вставне слово','Однорідний член'], correct:0},
+  {s:'«Дощ, здається, вщухає.» — виділене слово це…', opts:['Звертання','Вставне слово','Однорідний член'], correct:1},
+  {s:'«Ми купили яблука, груші й сливи.» — виділені слова це…', opts:['Звертання','Вставне слово','Однорідний член'], correct:2},
+];
+const L2_COMMA_ITEMS = [
+  {s:'Максиме приїжджай до нас улітку', opts:['0 ком','1 кома','2 коми'], correct:1},
+  {s:'Дощ здається вже вщухає', opts:['0 ком','1 кома','2 коми'], correct:2},
+  {s:'Ми купили яблука груші й сливи', opts:['0 ком','1 кома','2 коми'], correct:1},
+  {s:'Сік і вода стояли на столі', opts:['0 ком','1 кома','2 коми'], correct:0},
+];
+
+function readingHTML(){
+  return `
+    <div class="panel">
+      <h3>Читання й аналіз тексту</h3>
+      <p class="subtle" style="margin-bottom:16px;">Прочитайте лист. Знайдіть у ньому звертання та вставні слова.</p>
+      <div class="reading-text">
+        <p><strong>ЛИСТ ДРУГОВІ</strong></p>
+        <p>Привіт, Максиме!</p>
+        <p>Пишу тобі з табору, і, здається, це найкращий тиждень цього літа. Щоранку ми прокидаємось рано, снідаємо і біжимо на озеро. Там можна купатися, ловити рибу, будувати курінь із гілок і просто лежати на теплому піску.</p>
+        <p>Учора, на щастя, нарешті визирнуло сонце після трьох днів дощу. Вихователь, до речі, показав нам нове озеро за лісом — там, кажуть, водяться справжні бобри!</p>
+        <p>Максиме, приїжджай наступного року теж. По-перше, тут весело. По-друге, тренер обіцяє навчити нас вітрильного спорту. Чекаю на відповідь!</p>
+        <p>Твій друг Данило.</p>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 1 · Скільки разів автор звертається до Максима на ім'я?</div>
+        <div class="opt-list" id="reading-q1"></div>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 2 · Що це — звертання, вставне слово чи однорідний член?</div>
+        <div id="reading-type-list"></div>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ЗАВДАННЯ 3 · Гра «Знайди пару». З'єднайте вставне слово з листа з його групою.</div>
+        <div class="match-game-grid"><div class="match-pile" id="reading-match-left"></div><div class="match-pile" id="reading-match-right"></div></div>
+        <div class="game-score" id="reading-match-score">Знайдено пар: 0/${L2_READING_MATCH_PAIRS.length}</div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bulb')}<h3 style="margin-bottom:0;">Гра «Правда чи вигадка»</h3></div>
+      <div class="quickfire-list" id="truth-list"></div>
+      <div class="game-score" id="truth-score">Рахунок: 0/${L2_TRUTH_ITEMS.length}</div>
+    </div>`;
+}
+const L2_READING_TYPE_ITEMS = [
+  {s:'«Учора, на щастя, визирнуло сонце.» — «на щастя» це…', opts:['Звертання','Вставне слово','Однорідний член'], correct:1},
+  {s:'«Максиме, приїжджай наступного року.» — «Максиме» це…', opts:['Звертання','Вставне слово','Однорідний член'], correct:0},
+  {s:'«Купатися, ловити рибу і лежати на піску.» — виділене це…', opts:['Звертання','Вставне слово','Однорідний член'], correct:2},
+];
+const L2_READING_MATCH_PAIRS = [
+  {left:'здається', right:'Невпевненість'}, {left:'на щастя', right:'Емоційна оцінка'},
+  {left:'кажуть', right:'Джерело інформації'}, {left:'до речі', right:"Зв'язок думок"},
+];
+const L2_TRUTH_ITEMS = [
+  {t:'Данило пише лист із табору.', answer:true}, {t:'Усі дні в таборі йшов дощ.', answer:false}, {t:'Вихователь показав дітям нове озеро.', answer:true},
+];
+function attachReadingQ1(){
+  const wrap = document.getElementById('reading-q1');
+  if (!wrap) return;
+  const opts = [{t:'Один раз', correct:false}, {t:'Двічі — на початку й ближче до кінця листа', correct:true}, {t:'Жодного разу', correct:false}];
+  wrap.innerHTML = opts.map((o,i)=>`<label class="opt" data-i="${i}"><input type="radio" name="read-q1" value="${i}"><span>${o.t}</span></label>`).join('');
+  wrap.querySelectorAll('.opt').forEach((el,i) => {
+    el.addEventListener('click', () => { wrap.querySelectorAll('.opt').forEach(o => o.classList.remove('correct','incorrect')); el.classList.add(opts[i].correct ? 'correct':'incorrect'); });
+  });
+}
+
+function practiceHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 1. Гра «Кошики»</h3></div>
+      <div class="pool-row" id="p1-pool"></div>
+      <div class="basket-row">
+        <div class="basket" data-basket-for="p1-pool" data-type="address"><h5>👋 Звертання</h5><div id="basket-address"></div></div>
+        <div class="basket" data-basket-for="p1-pool" data-type="parenthetical"><h5>💭 Вставне слово</h5><div id="basket-parenthetical"></div></div>
+        <div class="basket" data-basket-for="p1-pool" data-type="homogeneous"><h5>🔗 Однорідний член</h5><div id="basket-homogeneous"></div></div>
+      </div>
+      <div class="game-score" id="p1-score">Рахунок: 0/${L2_P1_ITEMS.length}</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('check')}<h3 style="margin-bottom:0;">Вправа 2. Гра «Правильно чи ні?»</h3></div>
+      <div class="quickfire-list" id="p2-list"></div>
+      <div class="game-score" id="p2-score">Рахунок: 0/${L2_P2_ITEMS.length}</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bubble')}<h3 style="margin-bottom:0;">Вправа 3. Гра «Знайди пару»</h3></div>
+      <div class="match-game-grid"><div class="match-pile" id="match-left"></div><div class="match-pile" id="match-right"></div></div>
+      <div class="game-score" id="match-score">Знайдено пар: 0/${L2_MATCH_PAIRS.length}</div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('pencil')}<h3 style="margin-bottom:0;">Вправа 4. Гра «Склади речення»</h3></div>
+      <div class="callout" id="builder-target" style="min-height:52px;font-family:'Lora',serif;font-size:16.5px;"></div>
+      <div class="pool-row" id="builder-pool" style="margin-top:12px;"></div>
+      <button class="check-btn" onclick="checkBuilder()">Перевірити</button>
+      <button class="nav-btn secondary" style="padding:9px 16px;font-size:13px;margin-top:14px;margin-left:8px;" onclick="attachBuilderGame()">Перемішати ще раз</button>
+      <div id="builder-feedback" class="feedback"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bubble')}<h3 style="margin-bottom:0;">Вправа 5. Гра «Де звертання?»</h3></div>
+      <div id="p5-list"></div>
+    </div>
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('check')}<h3 style="margin-bottom:0;">Вправа 6. Двокрапка чи тире?</h3></div>
+      <div id="p6-list"></div>
+    </div>`;
+}
+const L2_P1_ITEMS = [
+  {t:'Тарасе', correctType:'address'}, {t:'мабуть', correctType:'parenthetical'}, {t:'книжки, зошити, ручки', correctType:'homogeneous'},
+  {t:'Оленко', correctType:'address'}, {t:'на жаль', correctType:'parenthetical'}, {t:'читає і малює', correctType:'homogeneous'},
+];
+const L2_P2_ITEMS = [
+  {t:'«Максиме, ти вже написав твір?» — коми розставлено правильно.', answer:true},
+  {t:'«Максиме ти вже написав, твір?» — коми розставлено правильно.', answer:false},
+  {t:'«Учні, як завжди, впораються із завданням.» — вставну конструкцію виділено правильно.', answer:true},
+  {t:'«На жаль ми запізнились на автобус.» — кому після вставного слова поставлено правильно.', answer:false},
+];
+const L2_MATCH_PAIRS = [
+  {left:'Невпевненість', right:'мабуть, можливо'}, {left:'Емоційна оцінка', right:'на щастя, на жаль'},
+  {left:'Джерело інформації', right:'кажуть, на мою думку'}, {left:"Зв'язок думок", right:'по-перше, отже'}, {left:'Звертання', right:'Оленко, Максиме'},
+];
+const L2_BUILDER_WORDS = ['Тарасе,','ти','вже','повернувся','додому?'];
+const L2_P5_ITEMS = [
+  {s:'Друже мій приходь до нас у гості.', opts:['На початку','Усередині','У кінці'], correct:0},
+  {s:'Чекаю, Оксано, на твою відповідь.', opts:['На початку','Усередині','У кінці'], correct:1},
+  {s:'Гарного тобі дня, бабусю.', opts:['На початку','Усередині','У кінці'], correct:2},
+];
+const L2_P6_ITEMS = [
+  {s:'Усе для походу___ намет, ліхтарик, аптечка.', opts:[':', '—'], correct:0},
+  {s:'Намет, ліхтарик, аптечка___ усе готове для походу.', opts:[':', '—'], correct:1},
+  {s:'На столі лежало все потрібне___ зошити, ручки, лінійка.', opts:[':', '—'], correct:0},
+];
+let l2BuilderHandle = null;
+function attachBuilderGame(){ l2BuilderHandle = LessonEngine.genBuilder('builder-target','builder-pool', L2_BUILDER_WORDS); }
+function checkBuilder(){ if (l2BuilderHandle) l2BuilderHandle.check('builder-feedback', L2_BUILDER_WORDS.join(' ')); }
+
+function reflectHTML(){
+  return `
+    <div class="panel">
+      <div class="panel-head">${LessonEngine.iconSvg('bulb')}<h3 style="margin-bottom:0;">Підсумок уроку</h3></div>
+      <p>Сьогодні ми з'ясували, що таке звертання і вставні слова, чому вони не є членами речення, а також повторили правила пунктуації при однорідних членах.</p>
+      <div class="task-block" style="margin-top:0;border-top:none;padding-top:0;">
+        <div class="task-label">ЯК ПРОЙШОВ УРОК?</div>
+        <div class="mood-row" id="mood-row">${LessonEngine.moodRow()}</div>
+        <p class="subtle" id="mood-response" style="margin-top:8px;"></p>
+      </div>
+      <div class="task-block">
+        <div class="task-label">БЛІЦ-ПОВТОРЕННЯ</div>
+        <div class="quickfire-list" id="recap-list"></div>
+        <div class="game-score" id="recap-score">Рахунок: 0/${L2_RECAP_ITEMS.length}</div>
+      </div>
+      <div class="task-block">
+        <div class="task-label">ДОМАШНЄ ЗАВДАННЯ</div>
+        <p>Повне інтерактивне ДЗ до цього уроку — <a href="lesson-02-dz.html">відкрити ДЗ →</a></p>
+      </div>
+    </div>`;
+}
+const L2_RECAP_ITEMS = [
+  {t:'Звертання виділяється комами.', answer:true}, {t:'Вставне слово є членом речення.', answer:false},
+  {t:'Перед узагальнювальним словом після однорідних членів може стояти тире.', answer:true},
+];
+
+const hook = Platform.initLessonPage('l6-02', 'Урок 2. Звертання. Вставні слова. Однорідні члени речення');
+LessonEngine.init({
+  themeClass: 'theme-plum',
+  title: 'Звертання. Вставні слова. Однорідні члени речення',
+  topic: 'Синтаксис · §6',
+  html: { warmup: warmupHTML, theory: theoryHTML, reading: readingHTML, practice: practiceHTML, quiz: () => LessonEngine.quizHTML(QUIZ2), reflect: reflectHTML },
+  attach: {
+    warmup: () => LessonEngine.genQuickfire('qf-list', L2_QF_ITEMS, 'qf-score'),
+    theory: () => { LessonEngine.genFlipGrid('flip-grid', L2_FLIP_ITEMS); LessonEngine.genChoiceRows('type-list', L2_TYPE_ITEMS); LessonEngine.genChoiceRows('comma-list', L2_COMMA_ITEMS); },
+    reading: () => { attachReadingQ1(); LessonEngine.genChoiceRows('reading-type-list', L2_READING_TYPE_ITEMS); LessonEngine.genMatchGame('reading-match-left','reading-match-right','reading-match-score', L2_READING_MATCH_PAIRS); LessonEngine.genQuickfire('truth-list', L2_TRUTH_ITEMS, 'truth-score'); },
+    practice: () => {
+      LessonEngine.genBasketGame('p1-pool', [{type:'address', elId:'basket-address'},{type:'parenthetical', elId:'basket-parenthetical'},{type:'homogeneous', elId:'basket-homogeneous'}], L2_P1_ITEMS, 'p1-score');
+      LessonEngine.genQuickfire('p2-list', L2_P2_ITEMS, 'p2-score', 'Правильно', 'Неправильно');
+      LessonEngine.genMatchGame('match-left','match-right','match-score', L2_MATCH_PAIRS);
+      attachBuilderGame();
+      LessonEngine.genChoiceRows('p5-list', L2_P5_ITEMS);
+      LessonEngine.genChoiceRows('p6-list', L2_P6_ITEMS);
+    },
+    quiz: () => LessonEngine.attachQuizHandlers(),
+    reflect: () => { LessonEngine.attachMoodPicker(); LessonEngine.genQuickfire('recap-list', L2_RECAP_ITEMS, 'recap-score'); },
+  },
+  onQuizDone: (score, total) => hook && hook.onQuizDone(score, total),
+});
+const QUIZ2 = [
+  {q:'Чим на письмі виділяється звертання?', opts:['Дужками','Комами (або знаком оклику)','Тире','Крапкою з комою'], correct:1},
+  {q:'Чи є звертання членом речення?', opts:['Так, головним','Так, другорядним','Ні, не є членом речення','Залежить від контексту'], correct:2},
+  {q:'Яке слово є вставним у реченні «Дощ, здається, вщухає»?', opts:['дощ','здається','вщухає','немає вставного слова'], correct:1},
+  {q:'До якої групи вставних слів належить «на жаль»?', opts:['Невпевненість','Емоційна оцінка','Джерело інформації',"Зв'язок думок"], correct:1},
+  {q:'До якої групи належить «на мою думку»?', opts:['Невпевненість','Емоційна оцінка','Джерело інформації',"Зв'язок думок"], correct:2},
+  {q:'Однорідні члени речення — це слова, що:', opts:['відповідають на різні питання','відповідають на те саме питання й залежать від одного слова','завжди стоять на початку речення','ніколи не мають сполучників'], correct:1},
+  {q:'Кома між однорідними членами без сполучників:', opts:['не ставиться','ставиться','ставиться лише іноді','залежить від інтонації'], correct:1},
+  {q:'У сполученні «сік і вода» (одиничний сполучник «і») кома:', opts:['ставиться перед «і»','не ставиться','ставиться після «і»','ставиться з обох боків'], correct:1},
+  {q:'Якщо перед однорідними членами стоїть узагальнювальне слово, перед переліком зазвичай ставимо:', opts:['кому','тире','двокрапку','нічого'], correct:2},
+  {q:'У реченні «Ти, Тарасе, вже все зробив?» звертання стоїть:', opts:['на початку речення','у середині речення','у кінці речення','звертання тут немає'], correct:1},
+];
+</script>
+</body>
+</html>
